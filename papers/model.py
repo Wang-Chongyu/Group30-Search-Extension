@@ -160,7 +160,7 @@ if __name__ == "__main__":
         for cur_embedding in cur_embeddings:
             similarity = F.cosine_similarity(torch.from_numpy(cur_embedding),torch.from_numpy(query_output))
             joint_similarity += similarity
-        similarities[idx] = joint_similarity/len(cur_embeddings) + len(cur_embeddings)/10
+        similarities[idx] = joint_similarity/len(cur_embeddings) + len(cur_embeddings)/1000000
 
     # sort the similarities
     sorted_similarities = sorted(similarities.items(),key=lambda x:x[1],reverse=True)
