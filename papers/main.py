@@ -27,8 +27,8 @@ def main(selection):
     prob_matrix = np.loadtxt("prob_matrix.txt")
     vocab = np.loadtxt("vocabulary.txt", dtype= 'str', delimiter=' ', encoding='utf-8')
     vocab = list(vocab)
-    # print(len(vocab))
-    # print(prob_matrix.shape)
+    print(len(vocab))
+    print(prob_matrix.shape)
     query_words = selection.split()
     paper_index = []
     flag = 0
@@ -169,8 +169,8 @@ def main(selection):
     return
 
 if __name__ == '__main__':
-    selection = sys.argv[1]
-    # selection = "machine learning"
+    # selection = sys.argv[1]
+    selection = "machine learning"
     main(selection)
 
     

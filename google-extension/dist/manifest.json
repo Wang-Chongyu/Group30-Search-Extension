@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "CS510",
+  "name": "CS510-Search",
   "version": "1.0",
 
   "permissions": ["<all_urls>", "activeTab"],
