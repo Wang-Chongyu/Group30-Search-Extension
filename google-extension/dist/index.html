@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Document</title>
+    <link rel="stylesheet" href="./styles.css"/>
+</head>
+
+<body class="container">
+<form class="form-data" autocomplete="on">
+    <div class="highlight-key-words">
+        <b>Highlight text:</b>
+    </div>
+    <div id="highlight"></div>
+    <div>
+        <input type="text" class="textbox-input" id="box"/>
+    </div>
+    <button class="search-btn">Search Text</button>
+</form>
+<div class="result">
+    <div class="loading">loading...</div>
+    <div class="errors"></div>
+    <div class="data"></div>
+    <div class="result-container">
+        <p><strong>Input Words: </strong><span class="selection"></span></p>
+
+        <p>
+        <details>
+            <summary><strong class="papers"></strong></summary>
+            <div id="papersroutput"></div> 
+            </details>
+        </p>
+    
+        <p>
+        <details>
+            <summary><strong class="scholar"></strong></summary>
+            <div id="scholaroutput"></div> 
+        </details>
+        </p>
+    
+        <p>
+        <details>
+            <summary><strong class="google"></strong></summary>
+            <div id="googleoutput"></div> 
+        </details>
+        </p>
+    </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
