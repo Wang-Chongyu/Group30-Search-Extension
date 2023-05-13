@@ -9,10 +9,11 @@ import platform
 import re
 import json
 import sys
+import csv
 # For Windows
 delimiter = "\\"
 dict_path = r'.\pdfs'
-txt_path = r'.\txts'
+txt_path = r'.\data'
 def main(selection):
     content = ''
     content2 = ''
@@ -20,15 +21,15 @@ def main(selection):
         global dict_path 
         dict_path = "./pdfs"
         global txt_path
-        txt_path = "./txts"
+        txt_path = "./data"
         global delimiter 
         delimiter = "/"
 
     prob_matrix = np.loadtxt("prob_matrix.txt")
     vocab = np.loadtxt("vocabulary.txt", dtype= 'str', delimiter=' ', encoding='utf-8')
     vocab = list(vocab)
-    print(len(vocab))
-    print(prob_matrix.shape)
+    # print(len(vocab))
+    # print(prob_matrix.shape)
     query_words = selection.split()
     paper_index = []
     flag = 0
@@ -55,8 +56,23 @@ def main(selection):
         line = line.strip('\n')
         file_list.append(line)
     # print(len(file_list), paper_index[0] * 2)
-    doc_name1 = file_list[paper_index[0] * 2] + '.txt'
-    relative_paper = open(txt_path + delimiter + doc_name1, 'r', encoding='utf-8')
+    # doc_name1 = file_list[paper_index[0] * 2] + '.txt'
+    with open('paper_lists.txt', 'r') as file:
+        for index, line in enumerate(file, start=1):
+            if index == paper_index[0]:
+                p_index = line.strip()
+                pdf_position = p_index.find('pdf')
+                pdf_number = p_index[pdf_position:p_index.rfind('.txt')]
+            if len(paper_index) >= 2:
+                if index == paper_index[1]:
+                    p_index = line.strip()
+                    pdf_position = p_index.find('pdf')
+                    pdf_number2 = p_index[pdf_position:p_index.rfind('.txt')]
+    doc_name1 = pdf_number
+    if len(paper_index) > 1:
+        doc_name2 = pdf_number2
+
+    relative_paper = open(txt_path + delimiter + doc_name1 + '.txt', 'r', encoding='utf-8')
     paper_content = ''
     for line in relative_paper.readlines():
         line = line.strip('\n')
@@ -79,7 +95,7 @@ def main(selection):
     # print(paper_content)
     if content == '':
         for i in range(15):
-            with open(txt_path + delimiter + file_list[i * 2] + '.txt', 'r', encoding='utf-8') as f:
+            with open(txt_path + delimiter + doc_name1 + '.txt', 'r', encoding='utf-8') as f:
                 paper_cont = f.read().replace('\n', '')
                 if query_words[0] in paper_cont:
                     paper_index[0] = i
@@ -100,8 +116,8 @@ def main(selection):
 
 
     if len(paper_index) > 1:
-        doc_name2 = file_list[paper_index[1] * 2] + '.txt'
-        relative_paper2 = open(txt_path + delimiter + doc_name2, 'r', encoding='utf-8')
+        # doc_name2 = file_list[paper_index[1] * 2] + '.txt'
+        relative_paper2 = open(txt_path + delimiter + doc_name2 + '.txt', 'r', encoding='utf-8')
         paper_content2 = ''
         for line in relative_paper2.readlines():
             line = line.strip('\n')
@@ -119,13 +135,32 @@ def main(selection):
             else:
                 content2 = paper_content2[start-num:end+num]
     
+    title = [0, 0]
+    link = [0, 0]
+    file_path = 'pdf_record.csv'
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+    # Create a CSV reader object
+        csv_reader = csv.DictReader(file, delimiter=',')
+
+        # Iterate through each row in the CSV file
+        for row in csv_reader:
+            # Check if the index in the current row matches the desired index
+            if row['pdf_index'] == doc_name1 + '.pdf':
+                # Store the matched ref and title in the dictionary
+                title[0] = row['title']
+                link[0] = row['ref']
+            if len(paper_index) > 1:
+                if row['pdf_index'] == doc_name2 + '.pdf':
+                    # Store the matched ref and title in the dictionary
+                    title[1] = row['title']
+                    link[1] = row['ref']
 
     # dictionary
     if len(paper_index) == 1 and content != '':
         j = {
             "papers":
                     [
-                        { "paperTitle":file_list[paper_index[0] * 2], "abstract":content, "link":file_list[paper_index[0] * 2 + 1]}
+                        { "paperTitle":title[0], "abstract":content, "link":link[0]}
                     ]
         }
 
@@ -136,7 +171,7 @@ def main(selection):
             j = {
                 "papers":
                         [
-                            { "paperTitle":file_list[paper_index[0] * 2], "abstract":content, "link":file_list[paper_index[0] * 2 + 1]}
+                            { "paperTitle":title[0], "abstract":content, "link":link[0]}
                         ]
             }
             print(json.dumps(j), end="")
@@ -145,8 +180,8 @@ def main(selection):
             j = {
                 "papers":
                         [
-                            { "paperTitle":file_list[paper_index[0] * 2], "abstract":content, "link":file_list[paper_index[0] * 2 + 1]},
-                            { "paperTitle":file_list[paper_index[1] * 2], "abstract":content2, "link":file_list[paper_index[1] * 2 + 1]}
+                            { "paperTitle":title[0], "abstract":content, "link":link[0]},
+                            { "paperTitle":title[1], "abstract":content2, "link":link[1]}
                         ]
             }
             print(json.dumps(j), end="")
@@ -154,7 +189,7 @@ def main(selection):
             j = {
                 "papers":
                         [
-                            { "paperTitle":file_list[paper_index[1] * 2], "abstract":content2, "link":file_list[paper_index[1] * 2 + 1]}
+                            { "paperTitle":title[1], "abstract":content2, "link":link[1]}
                         ]
             }
             print(json.dumps(j), end="")
@@ -169,8 +204,8 @@ def main(selection):
     return
 
 if __name__ == '__main__':
-    # selection = sys.argv[1]
-    selection = "machine learning"
+    selection = sys.argv[1]
+    # selection = "Machine"
     main(selection)
 
     

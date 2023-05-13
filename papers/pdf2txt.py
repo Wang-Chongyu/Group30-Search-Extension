@@ -1,11 +1,3 @@
-# The first task of building the PLSA model is to pre-process the paper documents. We have downloaded all the papers 
-# mentioned in the lecture as pdf files. We need to reformat the papers from pdf documents to txt documents, which can 
-# be easily read by python. In fact, the difficulty is that many papers have subfields (columns), which are hard to 
-# process. The Optical Character Recognition (OCR) method is hard to implement and does not have a good performance 
-# for our dataset. We utilized the tree hierarchy of html documents to distinguish different parts of paper documents. 
-# In pdf2txt.py, we traverse the folder which contains the paper documents and reformat them from pdf file to html file. 
-# Then we extract the content in html file and save as txt file. In that case the paper content can be read by our PLSA 
-# model. We already run pdf2txt.py and produced the txt files of papers, so that users do not need to run it again.
 import fitz
 from tqdm import tqdm
 from bs4 import BeautifulSoup

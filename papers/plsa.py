@@ -1,11 +1,3 @@
-# Plsa file contains our model, which is modified based on MP3. We used PLSA model to compute the relevance 
-# between query sentences and paper documents. For the parameters, we choose 10 topics and iterate to 
-# likelihood convergence with maximum iteration of 100. The PLSA model will compute the probability 
-# matrix of words occurred in documents when converged.The probability matrix has a shape of (number 
-# of vocabulary, number of documents). The model can save the probability matrix and the vocabulary as 
-# two txt files, which can be used in main.py to find the relative papers based on query sentences. PLSA 
-# model is already trained and adjust in plsa.py, and the prob_matrix.txt and vocabulary.txt have already 
-# produced, so users do not need to run it again.
 import numpy as np
 import math
 import os
@@ -17,13 +9,10 @@ import platform
 delimiter = "\\"
 
 def normalize(input_matrix):
-    """
-    Normalizes the rows of a 2d input_matrix so they sum to 1
-    """
 
     row_sums = input_matrix.sum(axis=1)
     try:
-        assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0]) # no row should sum to zero
+        assert (np.count_nonzero(row_sums)==np.shape(row_sums)[0])
     except Exception:
         raise Exception("Error while normalizing. Row(s) sum to zero")
     new_matrix = input_matrix / row_sums[:, np.newaxis]
@@ -35,20 +24,14 @@ def txtlist(dict_path):
     for files in os.walk(dict_path):
         for file in files[2]:
             file_list.append(dict_path + delimiter + file)
-
+    # print(file_list)
     return file_list
 
 
 class Corpus(object):
 
-    """
-    A collection of documents.
-    """
-
     def __init__(self, documents_path):
-        """
-        Initialize empty document list.
-        """
+
         self.documents = []
         self.vocabulary = []
         self.likelihoods = []
@@ -63,15 +46,7 @@ class Corpus(object):
         self.p_w = 0
 
     def build_corpus(self):
-        """
-        Read document, fill in self.documents, a list of list of word
-        self.documents = [["the", "day", "is", "nice", "the", ...], [], []...]
-        
-        Update self.number_of_documents
-        """
-        # #############################
-        # your code here
-        # #############################
+
         for doc in self.documents_path:
             file = open(doc, 'r', encoding='utf-8')
             document_content = []
@@ -89,15 +64,7 @@ class Corpus(object):
         
 
     def build_vocabulary(self):
-        """
-        Construct a list of unique words in the whole corpus. Put it in self.vocabulary
-        for example: ["rain", "the", ...]
 
-        Update self.vocabulary_size
-        """
-        # #############################
-        # your code here
-        # #############################
         for line in self.documents:
             for word in line:
                 if word not in self.vocabulary and word != ' ' and word != '':
@@ -107,15 +74,7 @@ class Corpus(object):
 
 
     def build_term_doc_matrix(self):
-        """
-        Construct the term-document matrix where each row represents a document, 
-        and each column represents a vocabulary term.
 
-        self.term_doc_matrix[i][j] is the count of term j in document i
-        """
-        # ############################
-        # your code here
-        # ############################
         self.term_doc_matrix = [[0]*(len(self.documents))]*len(self.vocabulary)
         for i in range(len(self.documents)):
             for j in range(len(self.documents[i])):
@@ -127,16 +86,7 @@ class Corpus(object):
 
 
     def initialize_randomly(self, number_of_topics):
-        """
-        Randomly initialize the matrices: document_topic_prob and topic_word_prob
-        which hold the probability distributions for P(z | d) and P(w | z): self.document_topic_prob, and self.topic_word_prob
 
-        Don't forget to normalize! 
-        HINT: you will find numpy's random matrix useful [https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.random.html]
-        """
-        # ############################
-        # your code here
-        # ############################
         self.document_topic_prob = np.random.random((self.number_of_documents, number_of_topics))
         self.document_topic_prob = normalize(self.document_topic_prob)
 
@@ -148,12 +98,7 @@ class Corpus(object):
         
 
     def initialize_uniformly(self, number_of_topics):
-        """
-        Initializes the matrices: self.document_topic_prob and self.topic_word_prob with a uniform 
-        probability distribution. This is used for testing purposes.
 
-        DO NOT CHANGE THIS FUNCTION
-        """
         self.document_topic_prob = np.ones((self.number_of_documents, number_of_topics))
         self.document_topic_prob = normalize(self.document_topic_prob)
 
@@ -161,8 +106,7 @@ class Corpus(object):
         self.topic_word_prob = normalize(self.topic_word_prob)
 
     def initialize(self, number_of_topics, random=False):
-        """ Call the functions to initialize the matrices document_topic_prob and topic_word_prob
-        """
+
         print("Initializing...")
 
         if random:
@@ -171,14 +115,8 @@ class Corpus(object):
             self.initialize_uniformly(number_of_topics)
 
     def expectation_step(self):
-        """ The E-step updates P(z | w, d)
-        """
-        print("E step:")
-        
-        # ############################
-        # your code here
-        # ############################
 
+        print("E step:")
         P_z_d = self.document_topic_prob.reshape((self.document_topic_prob.shape[0], self.document_topic_prob.shape[1], 1))
         P_w_z = self.topic_word_prob.reshape((1, self.document_topic_prob.shape[1], self.vocabulary_size))
         self.p_w = P_z_d * P_w_z
@@ -190,15 +128,8 @@ class Corpus(object):
             
 
     def maximization_step(self, number_of_topics):
-        """ The M-step updates P(w | z)
-        """
         print("M step:")
         
-        # update P(w | z)
-        
-        # ############################
-        # your code here
-        # ############################
         td_matrix = np.array(self.term_doc_matrix)
         count_w_d = td_matrix.T.reshape((self.number_of_documents, 1, self.vocabulary_size))
         topic_word_prob_top = count_w_d * self.topic_prob
@@ -209,10 +140,6 @@ class Corpus(object):
         # print(self.topic_word_prob.shape)
         # update P(z | d)
 
-        # ############################
-        # your code here
-        # ############################
-        
         document_topic_top = count_w_d * self.topic_prob
         document_topic_top = document_topic_top.sum(axis=2)
         temp2 = document_topic_top.sum(axis=1)
@@ -222,15 +149,7 @@ class Corpus(object):
 
 
     def calculate_likelihood(self, number_of_topics):
-        """ Calculate the current log-likelihood of the model using
-        the model's updated probability matrices
-        
-        Append the calculated log-likelihood to self.likelihoods
 
-        """
-        # ############################
-        # your code here
-        # ############################
         td_matrix = np.array(self.term_doc_matrix)
         count_w_d = td_matrix.T.reshape((self.number_of_documents, 1, self.vocabulary_size))
         P_z_d = self.document_topic_prob.reshape((self.document_topic_prob.shape[0], self.document_topic_prob.shape[1], 1))
@@ -242,9 +161,6 @@ class Corpus(object):
 
     def plsa(self, number_of_topics, max_iter, epsilon):
 
-        """
-        Model topics.
-        """
         print ("EM iteration begins...")
         
         # build term-doc matrix
@@ -264,9 +180,6 @@ class Corpus(object):
         for iteration in range(max_iter):
             print("Iteration #" + str(iteration + 1) + "...")
 
-            # ############################
-            # your code here
-            # ############################
             self.expectation_step()
             self.maximization_step(number_of_topics)
             self.calculate_likelihood(number_of_topics)
@@ -294,19 +207,25 @@ def main(selection):
     if platform.system().lower() != "windows":
         global delimiter 
         delimiter = "/"
-        documents_path = txtlist('./papers/txts')
+        documents_path = txtlist('./papers/data')
+        documents_path = documents_path[:100]
     else:
         # For Windows
-        documents_path = txtlist(r'.\papers\txts')
+        documents_path = txtlist(r'.\papers\data')
+        documents_path = documents_path[:100]
+
+    with open('paper_lists.txt', 'w') as f:
+        for item in documents_path:
+            f.write("%s\n" % item)
         
-    corpus = Corpus(documents_path)  # instantiate corpus
+    corpus = Corpus(documents_path)
     corpus.build_corpus()
     corpus.build_vocabulary()
     print("Vocabulary size:" + str(len(corpus.vocabulary)))
     print("Number of documents:" + str(len(corpus.documents)))
     number_of_topics = 10
     max_iterations = 100
-    epsilon = 0.001
+    epsilon = 0.01
     corpus.plsa(number_of_topics, max_iterations, epsilon)
 
     # print(corpus.p_w.sum(axis=1).shape)
